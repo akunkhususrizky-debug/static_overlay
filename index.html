@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lato:wght@400;700;900&family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;600;700;800&family=Oswald:wght@400;500;600;700&family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    /* 1920x1080 transparent browser overlay, styled to match the reference video. */
+    :root {
+      --purple: #bd16ae;
+      --purple-dark: #84109a;
+      --red: #ee202b;
+      --white: #fff;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
+      background: transparent !important; color: var(--white);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    body { position: relative; }
+    #overlayRoot {
+      position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+      background: transparent !important;
+    }
+
+    /* Graphic footprint is intentionally compact and centered in the lower area. */
+    .lower-third {
+      --accent: var(--purple);
+      position: absolute;
+      left: var(--lt-left, 21%); bottom: var(--lt-bottom, 13%); width: var(--lt-width, 58%); height: 13vh;
+      min-height: 94px; max-height: 144px;
+      opacity: 0; visibility: hidden;
+      transform: translate3d(-18px, 3px, 0);
+      pointer-events: none;
+      will-change: opacity, transform;
+    }
+    .lower-third.is-visible {
+      visibility: visible;
+      animation: frame-in 380ms cubic-bezier(.22,.75,.24,1) both;
+    }
+    .lower-third.is-hiding {
+      visibility: visible;
+      animation: frame-out 760ms cubic-bezier(.4,0,.2,1) both;
+    }
+
+    .lt-left-tab {
+      position: absolute; z-index: 0;
+      left: -5.7%; top: 5%; width: 15.8%; height: 61%;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #d52abd 0%, #b318ac 43%, #8613a0 100%);
+      box-shadow: 0 2px 12px rgba(153, 14, 151, .22);
+      opacity: 0; transform: translate3d(-14px, 0, 0) scaleX(.66);
+      transform-origin: left center;
+    }
+    .lt-glass-bar {
+      position: absolute; z-index: 1; left: 0; top: 0;
+      width: 100%; height: 70%;
+      border: 1px solid rgba(255,255,255,.68);
+      border-radius: 8px;
+      overflow: hidden; isolation: isolate;
+      background: linear-gradient(100deg, rgba(15,16,19,.66), rgba(12,13,15,.54) 52%, rgba(12,13,15,.70));
+      box-shadow: 0 4px 12px rgba(0,0,0,.16);
+      -webkit-backdrop-filter: blur(3px);
+      backdrop-filter: blur(3px);
+      clip-path: inset(0 100% 0 0 round 8px);
+      opacity: 0; transform: scaleX(.99); transform-origin: left center;
+    }
+    .lt-glass-bar::after {
+      content: ""; position: absolute; z-index: 1; left: 0; right: 0; bottom: 0;
+      height: 8px; background: var(--red); border-radius: 0 0 7px 7px;
+    }
+    .lt-red-corner {
+      position: absolute; z-index: 3;
+      top: -3%; right: -0.3%; width: 2.7%; height: 21%;
+      min-width: 10px; border-radius: 2px 2px 0 2px;
+      background: var(--red);
+      box-shadow: 0 1px 5px rgba(0,0,0,.16);
+      opacity: 0; transform: translate3d(0, 5px, 0) scale(.72);
+      transform-origin: center center;
+    }
+    .lt-main {
+      position: absolute; z-index: 2;
+      left: 0; top: 0; width: 100%; height: 70%;
+      display: flex; align-items: center; justify-content: center;
+      padding: 7px 6% 13px; overflow: visible;
+      color: #fff; text-align: center;
+      font-size: var(--lt-title-size, clamp(20px, 1.55vw, 32px));
+      font-family: var(--lt-font-family, Arial, Helvetica, sans-serif);
+      font-weight: 650; line-height: 1.3;
+      letter-spacing: -.035em;
+      text-shadow: 0 1px 2px rgba(0,0,0,.55);
+    }
+    /* The outer clip wrapper has generous vertical padding, so glyphs/diacritics never touch its crop edge. */
+    .lt-title-clip {
+      display: block; width: 100%; max-width: 100%; box-sizing: border-box;
+      overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: center;
+      line-height: 1.3; padding: 7px 2px 11px;
+      clip-path: inset(-2px 100% -2px 0); opacity: .12;
+      will-change: clip-path, opacity, transform, filter;
+    }
+    .lt-main-text {
+      display: inline; max-width: 100%; white-space: nowrap;
+      line-height: inherit;
+    }
+    .lt-caption {
+      position: absolute; z-index: 2;
+      left: 0; top: 76%; width: 100%; height: 24%;
+      color: rgba(255,255,255,.96);
+      font-size: var(--lt-caption-size, clamp(10px, .75vw, 15px));
+      font-family: var(--lt-font-family, Arial, Helvetica, sans-serif);
+      font-weight: 400; line-height: 1.25;
+      letter-spacing: -.01em;
+      text-align: center;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      text-shadow: 0 1px 2px rgba(0,0,0,.75);
+      opacity: 0; transform: translate3d(0, 5px, 0);
+    }
+    .caption-separator { color: #f5d8f4; padding: 0 .28em; }
+
+    /* Entrance: color tab, glass bar, title wipe, then the small caption. */
+    .is-visible .lt-left-tab { animation: tab-in 510ms cubic-bezier(.18,.78,.2,1) 40ms both; }
+    .is-visible .lt-glass-bar { animation: glass-in 520ms cubic-bezier(.2,.75,.22,1) 35ms both; }
+    .is-visible .lt-red-corner { animation: corner-in 360ms cubic-bezier(.2,.8,.2,1) 950ms both; }
+    .is-visible .lt-title-clip { animation: title-wipe 1050ms cubic-bezier(.18,.72,.22,1) 850ms both; }
+    .is-visible .lt-caption { animation: caption-in 430ms ease-out 1100ms both; }
+
+    /* Exit mimics the reference: text clears first, bar retracts, corner rotates. */
+    .is-hiding .lt-title-clip { animation: title-out 420ms cubic-bezier(.4,0,.2,1) both; }
+    .is-hiding .lt-caption { animation: caption-out 340ms cubic-bezier(.4,0,.2,1) 35ms both; }
+    .is-hiding .lt-glass-bar { animation: glass-out 620ms cubic-bezier(.4,0,.2,1) 90ms both; }
+    .is-hiding .lt-left-tab { animation: tab-out 500ms cubic-bezier(.4,0,.2,1) 45ms both; }
+    .is-hiding .lt-red-corner { animation: corner-out 470ms cubic-bezier(.4,0,.2,1) 90ms both; }
+
+    @keyframes frame-in {
+      from { opacity: 0; transform: translate3d(-18px, 3px, 0); }
+      to   { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+    @keyframes frame-out {
+      0% { opacity: 1; transform: translate3d(0,0,0); }
+      72% { opacity: .96; transform: translate3d(-2px,0,0); }
+      100% { opacity: 0; transform: translate3d(-10px,0,0); }
+    }
+    @keyframes tab-in {
+      0% { opacity: 0; transform: translate3d(-14px,0,0) scaleX(.66); }
+      100% { opacity: 1; transform: translate3d(0,0,0) scaleX(1); }
+    }
+    @keyframes glass-in {
+      0% { opacity: 0; clip-path: inset(0 100% 0 0 round 8px); transform: scaleX(.99); }
+      100% { opacity: 1; clip-path: inset(0 0 0 0 round 8px); transform: scaleX(1); }
+    }
+    @keyframes corner-in {
+      0% { opacity: 0; transform: translate3d(0,5px,0) scale(.72); }
+      75% { opacity: 1; transform: translate3d(0,-1px,0) scale(1.05); }
+      100% { opacity: 1; transform: translate3d(0,0,0) scale(1); }
+    }
+    @keyframes title-wipe {
+      0% { opacity: .1; clip-path: inset(-2px 100% -2px 0); }
+      100% { opacity: 1; clip-path: inset(-2px 0 -2px 0); }
+    }
+    @keyframes caption-in {
+      from { opacity: 0; transform: translate3d(0,5px,0); }
+      to { opacity: 1; transform: translate3d(0,0,0); }
+    }
+    @keyframes title-out {
+      0% { opacity: 1; transform: translate3d(0,0,0); filter: blur(0); clip-path: inset(-2px 0 -2px 0); }
+      100% { opacity: 0; transform: translate3d(-9px,0,0); filter: blur(.8px); clip-path: inset(-2px 0 -2px 0); }
+    }
+    @keyframes caption-out {
+      0% { opacity: 1; transform: translate3d(0,0,0); }
+      100% { opacity: 0; transform: translate3d(0,-5px,0); }
+    }
+    @keyframes glass-out {
+      0% { opacity: 1; clip-path: inset(0 0 0 0 round 8px); transform: translate3d(0,0,0) scaleX(1); }
+      100% { opacity: 0; clip-path: inset(0 100% 0 0 round 8px); transform: translate3d(-7px,0,0) scaleX(.99); }
+    }
+    @keyframes tab-out {
+      0% { opacity: 1; transform: translateX(0) scaleX(1); }
+      100% { opacity: 0; transform: translateX(-18px) scaleX(.72); }
+    }
+    @keyframes corner-out {
+      0% { opacity: 1; transform: translate3d(0,0,0) rotate(0deg) scale(1); }
+      45% { opacity: 1; transform: translate3d(2px,-1px,0) rotate(45deg) scale(1.04); }
+      100% { opacity: 0; transform: translate3d(12px,2px,0) rotate(45deg) scale(.82); }
+    }
+
+    /* The other presets retain the same compact composition with quieter accents. */
+    .lower-third[data-template="minimal"] .lt-left-tab,
+    .lower-third[data-template="minimal"] .lt-red-corner { display: none; }
+    .lower-third[data-template="minimal"] .lt-glass-bar {
+      border-color: rgba(255,255,255,.35);
+      border-radius: 8px;
+      border-bottom: 0;
+      background: rgba(9,10,12,.34);
+      box-shadow: none;
+      -webkit-backdrop-filter: none; backdrop-filter: none;
+    }
+    .lower-third[data-template="minimal"] .lt-main { text-shadow: 0 1px 5px rgba(0,0,0,.85); }
+    .lower-third[data-template="modern"] { --accent: var(--red); }
+    .lower-third[data-template="modern"] .lt-left-tab {
+      background: linear-gradient(135deg, #f0444b, #c8202b 64%, #9a111a);
+      border-radius: 3px;
+    }
+    .lower-third[data-template="modern"] .lt-red-corner { border-radius: 0; }
+
+    @media (max-width: 800px) {
+      .lower-third { height: 13vh; min-height: 90px; max-height: 140px; }
+      .lt-main { font-size: var(--lt-title-size, clamp(18px, 2.2vw, 28px)); }
+      .lt-caption { font-size: var(--lt-caption-size, clamp(9px, 1vw, 13px)); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .lower-third, .lower-third.is-visible, .lower-third.is-hiding,
+      .lower-third * { animation-duration: 1ms !important; animation-delay: 0ms !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="overlayRoot" aria-hidden="true">
+    <section id="lowerThird" class="lower-third" data-template="classic">
+      <div class="lt-left-tab"></div>
+      <div class="lt-glass-bar"></div>
+      <div class="lt-red-corner"></div>
+      <div id="title" class="lt-main"><span class="lt-title-clip"><span id="titleText" class="lt-main-text"></span></span></div>
+      <div id="caption" class="lt-caption">
+        <span id="name"></span><span id="captionSeparator" class="caption-separator">·</span><span id="description"></span>
+      </div>
+    </section>
+  </div>
+  <script>
+    const lowerThird = document.getElementById('lowerThird');
+    // The overlay URL includes ?id=SESSION_ID&api=APPS_SCRIPT_EXEC_URL.
+    const pageParams = new URLSearchParams(window.location.search);
+    const sessionId = pageParams.get('id') || '';
+    const apiBaseUrl = pageParams.get('api') || '';
+    const nameEl = document.getElementById('name');
+    const descriptionEl = document.getElementById('description');
+    const titleEl = document.getElementById('title');
+    const titleTextEl = document.getElementById('titleText');
+    const separatorEl = document.getElementById('captionSeparator');
+    let lastVisible = null;
+    let lastTextSignature = '';
+    let newestState = null;
+    let pollBusy = false;
+    let hideTimer = null;
+
+    function showGraphic() {
+      clearTimeout(hideTimer);
+      lowerThird.style.visibility = 'visible';
+      lowerThird.classList.remove('is-visible', 'is-hiding');
+      // Force reflow so the entrance sequence can replay on every show/update.
+      void lowerThird.offsetWidth;
+      lowerThird.classList.add('is-visible');
+    }
+
+    function hideGraphic() {
+      clearTimeout(hideTimer);
+      lowerThird.classList.remove('is-visible');
+      lowerThird.classList.add('is-hiding');
+      hideTimer = setTimeout(() => {
+        if (newestState && !newestState.visible) {
+          lowerThird.classList.remove('is-hiding');
+          lowerThird.style.visibility = 'hidden';
+        }
+      }, 760);
+    }
+
+    function applyState(state) {
+      if (!state) return;
+      newestState = state;
+      const safeName = String(state.name || '');
+      const safeDescription = String(state.description || '');
+      const safeTitle = String(state.title || '');
+      const template = ['classic', 'minimal', 'modern'].includes(state.template) ? state.template : 'classic';
+      const allowedFonts = ['Arial','Inter','Roboto','Montserrat','Open Sans','Lato','Oswald','Georgia','Verdana','Tahoma'];
+      const fontFamily = allowedFonts.includes(state.fontFamily) ? state.fontFamily : 'Arial';
+      const titleFontSize = Math.max(18, Math.min(56, Number(state.titleFontSize) || 32));
+      const captionFontSize = Math.max(10, Math.min(28, Number(state.captionFontSize) || 15));
+      const boxWidth = Math.max(35, Math.min(85, Number(state.boxWidth) || 58));
+      const positionX = Math.max(0, Math.min(100 - boxWidth, Number(state.positionX) || 21));
+      const positionY = Math.max(0, Math.min(40, Number(state.positionY) || 13));
+      lowerThird.style.setProperty('--lt-font-family', '"' + fontFamily + '", Arial, Helvetica, sans-serif');
+      lowerThird.style.setProperty('--lt-title-size', titleFontSize + 'px');
+      lowerThird.style.setProperty('--lt-caption-size', captionFontSize + 'px');
+      lowerThird.style.setProperty('--lt-left', positionX + '%');
+      lowerThird.style.setProperty('--lt-bottom', positionY + '%');
+      lowerThird.style.setProperty('--lt-width', boxWidth + '%');
+      const styleSignature = [fontFamily, titleFontSize, captionFontSize, positionX, positionY, boxWidth].join('|');
+      const textSignature = [safeName, safeDescription, safeTitle, template, styleSignature].join('\u001f');
+      const textChanged = textSignature !== lastTextSignature;
+
+      if (textChanged) {
+        nameEl.textContent = safeName;
+        nameEl.style.display = safeName ? 'inline' : 'none';
+        descriptionEl.textContent = safeDescription;
+        descriptionEl.style.display = safeDescription ? 'inline' : 'none';
+        separatorEl.style.display = safeName && safeDescription ? 'inline' : 'none';
+        titleTextEl.textContent = safeTitle;
+        titleEl.style.display = safeTitle ? 'flex' : 'none';
+        lowerThird.dataset.template = template;
+        lastTextSignature = textSignature;
+      }
+
+      const isVisible = Boolean(state.visible);
+      if (isVisible !== lastVisible) {
+        if (isVisible) showGraphic();
+        else if (lastVisible === null) lowerThird.style.visibility = 'hidden';
+        else hideGraphic();
+      } else if (textChanged && isVisible) {
+        // New text gets the same wipe/reveal animation without needing a page reload.
+        showGraphic();
+      }
+      lastVisible = isVisible;
+    }
+
+    let jsonpSequence = 0;
+    function poll() {
+      if (!sessionId || !apiBaseUrl || pollBusy) return;
+      pollBusy = true;
+      const callbackName = 'ltStateCallback' + (++jsonpSequence);
+      const script = document.createElement('script');
+      let completed = false;
+      const finish = () => {
+        if (completed) return;
+        completed = true;
+        pollBusy = false;
+        if (script.parentNode) script.parentNode.removeChild(script);
+        try { delete window[callbackName]; } catch (err) { window[callbackName] = undefined; }
+      };
+      window[callbackName] = state => { finish(); if (state && !state.error) applyState(state); };
+      script.onerror = finish;
+      const apiUrl = new URL(apiBaseUrl);
+      apiUrl.searchParams.set('page', 'api');
+      apiUrl.searchParams.set('action', 'state');
+      apiUrl.searchParams.set('id', sessionId);
+      apiUrl.searchParams.set('callback', callbackName);
+      apiUrl.searchParams.set('_', String(Date.now()));
+      script.src = apiUrl.toString();
+      document.head.appendChild(script);
+      setTimeout(finish, 8000);
+    }
+
+    if (!apiBaseUrl) {
+      console.error('Overlay API URL is missing. Open the overlay via the link generated in the control panel.');
+    }
+    poll();
+    setInterval(poll, 1500);
+  </script>
+</body>
+</html>
